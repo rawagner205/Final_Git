@@ -7,6 +7,7 @@ using System;
 using Unity.VisualScripting;
 using static UIManager;
 using System.ComponentModel;
+using NUnit.Framework;
 
 public class PlayerController : MonoBehaviour
 {
@@ -43,12 +44,17 @@ public class PlayerController : MonoBehaviour
 
 
     //Allows for detection of collisions
-    //Must match what "Item" and "Obstacle" layers are set to in Unity
+    //Must match what these layers are set to in Unity
+    [SerializeField] int groundLayer = 3;
     [SerializeField] int itemLayer = 6;
     [SerializeField] int obstacleLayer = 7;
     [SerializeField] int nonCollectibleLayer = 8;
 
+    //variables for controlling ability to jump
     TrackingBool canJump = new TrackingBool(false);
+    float jumpTimer = 0f;
+    bool isTouchingGround;
+    bool timerOn = false;
 
     void Start()
     {
@@ -88,6 +94,31 @@ public class PlayerController : MonoBehaviour
     {
         MovePlayer();
         UseItem();
+
+        //jump functionality
+        if (Keyboard.current.spaceKey.isPressed && canJump.trackedBool == true && isTouchingGround == true)
+        {
+            timerOn = true;
+        }
+
+        if (timerOn == true)
+        {
+            jumpTimer += Time.deltaTime;
+        }   
+
+        if (jumpTimer < .1 && timerOn == true && canJump.trackedBool == true)
+            {
+                isTouchingGround = false;
+                rb.AddForce(new Vector2 (0, jumpHeight), ForceMode2D.Impulse);
+            }
+        
+        if (isTouchingGround == true)
+        {
+            timerOn = false;
+            jumpTimer = 0f;
+        }
+
+        
     }
 
     void MovePlayer()
@@ -105,10 +136,6 @@ public class PlayerController : MonoBehaviour
             movement -= .1f;
             walk.enabled = true;
             walk.Play(Animator.StringToHash("WalkCycleBackwards"));
-        }
-        else if (Keyboard.current.spaceKey.isPressed && canJump.trackedBool == true)
-        {
-            rb.AddForce(new Vector2 (0, jumpHeight), ForceMode2D.Impulse);
         }
         else
         {
@@ -237,6 +264,10 @@ public class PlayerController : MonoBehaviour
                     Destroy(collision.gameObject);
                 }
             }
+        }
+        else if (collision.gameObject.layer == groundLayer)
+        {
+            isTouchingGround = true;
         }
     }
 

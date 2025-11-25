@@ -1040,10 +1040,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Hill
       objectReference: {fileID: 0}
-    - target: {fileID: 5092660949302342155, guid: 4efb2217d9d213e419913695afc6866a, type: 3}
-      propertyPath: m_Layer
-      value: 3
-      objectReference: {fileID: 0}
     - target: {fileID: 7313876341850854460, guid: 4efb2217d9d213e419913695afc6866a, type: 3}
       propertyPath: m_LocalScale.x
       value: 14.527589
@@ -1384,7 +1380,6 @@ MonoBehaviour:
   uiDocument: {fileID: 172665146}
   inventorySize: 3
   explosionEffect: {fileID: 3252630683105868053, guid: e7113ba4fbceb8845bf0b5338ca72640, type: 3}
-  groundLayer: 3
   itemLayer: 6
   obstacleLayer: 7
   nonCollectibleLayer: 8
@@ -1414,7 +1409,7 @@ Rigidbody2D:
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 0
-  m_Constraints: 4
+  m_Constraints: 0
 --- !u!212 &1669790942
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1535,7 +1530,7 @@ GameObject:
   - component: {fileID: 1951885534}
   - component: {fileID: 1951885533}
   - component: {fileID: 1951885532}
-  m_Layer: 3
+  m_Layer: 0
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
