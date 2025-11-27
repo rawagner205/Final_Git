@@ -14,7 +14,7 @@ public class PlayerController : MonoBehaviour
 
     // Starting speed of player movement
     [SerializeField] public float forwardSpeed = 1f;
-    [SerializeField] public int jumpHeight = 7;
+    [SerializeField] public float jumpHeight = .5f;
     float movement = 0f;
 
     UIManager uiManager;
@@ -73,8 +73,8 @@ public class PlayerController : MonoBehaviour
         //set up itemList
         Item NoteFile = new TextItem("NoteFile", "This is a text item.");
         itemList.Add(NoteFile.name, NoteFile);
-        Item newKey = new KeyItem("newKey", "Try touching that triangle now.");
-        itemList.Add(newKey.name, newKey);
+        Item Hammer = new KeyItem("Hammer", "Try touching that triangle now.");
+        itemList.Add(Hammer.name, Hammer);
         Item Terminal_1 = new NonCollectible ("Terminal_1", "Use 'V' to navigate inventory, 'C' to use item, 'X' to drop");
         itemList.Add(Terminal_1.name, Terminal_1);
         Item JumpTool = new AbilityItem("JumpTool", "Press spacebar to jump", "jump");
@@ -83,7 +83,7 @@ public class PlayerController : MonoBehaviour
         itemList.Add(FinalKey.name, FinalKey);
 
         //set up lockList
-        lockList.Add("evilTriangle", "newKey");
+        lockList.Add("evilTriangle", "Hammer");
         lockList.Add("Door", "FinalKey");
 
         //set up abilityList
@@ -106,7 +106,7 @@ public class PlayerController : MonoBehaviour
             jumpTimer += Time.deltaTime;
         }   
 
-        if (jumpTimer < .1 && timerOn == true && canJump.trackedBool == true)
+        if (jumpTimer < .05 && timerOn == true && canJump.trackedBool == true)
             {
                 isTouchingGround = false;
                 rb.AddForce(new Vector2 (0, jumpHeight), ForceMode2D.Impulse);

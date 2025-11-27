@@ -102,7 +102,7 @@ TextureImporter:
   compressionQuality: 50
   spriteMode: 2
   spriteExtrude: 1
-  spriteMeshType: 1
+  spriteMeshType: 0
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 100
@@ -170,10 +170,10 @@ TextureImporter:
       name: Jerom_topRL_CCBYSA3_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 111
-        width: 27
-        height: 17
+        x: 16
+        y: 112
+        width: 8
+        height: 8
       alignment: 0
       pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}

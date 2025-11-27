@@ -5,11 +5,11 @@ TagManager:
   serializedVersion: 3
   tags:
   - Locked
-  - newKey
   - NoteFile
   - Terminal_1
   - JumpTool
   - FinalKey
+  - Hammer
   layers:
   - Default
   - TransparentFX
