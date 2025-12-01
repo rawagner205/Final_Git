@@ -25,6 +25,7 @@ public abstract class Item
     public string itemText { get; set; } = "item description";
 
     public bool isAbility {get; set; } = false;
+    public bool isMotion {get; set; } = false;
     public string targetAbility {get; set;} = null;
 
     public Item(string itemName, string newItemText)
@@ -89,6 +90,19 @@ public class AbilityItem : Item
     }
 
 
+}
+
+public class MotionItem : Item
+{
+    public MotionItem(string itemName, string newItemText) : base(itemName, newItemText)
+    {
+        isMotion = true;
+    }
+
+    public override string UseItem()
+    {
+        return itemText;
+    }
 }
 
 public class TrackingBool

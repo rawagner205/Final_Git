@@ -7,9 +7,15 @@ TagManager:
   - Locked
   - NoteFile
   - Terminal_1
-  - JumpTool
   - FinalKey
   - Hammer
+  - Spring
+  - JumpTool
+  - TrapdoorKey
+  - ExtraSprings
+  - FloorCollider
+  - Terminal_2
+  - RemoteControl
   layers:
   - Default
   - TransparentFX
@@ -31,7 +37,7 @@ TagManager:
   - 
   - 
   - 
-  - 
+  - Overlay
   - 
   - 
   - 

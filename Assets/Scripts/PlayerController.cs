@@ -2,35 +2,40 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using static ItemController;
+using static PlayerMovement;
+using static InventoryManager;
+using static CollisionHandler;
 using UnityEngine.UIElements;
 using System;
 using Unity.VisualScripting;
 using static UIManager;
 using System.ComponentModel;
 using NUnit.Framework;
+using UnityEngine.SceneManagement;
+using NUnit.Framework.Constraints;
 
 public class PlayerController : MonoBehaviour
 {
 
     // Starting speed of player movement
     [SerializeField] public float forwardSpeed = 1f;
-    [SerializeField] public float jumpHeight = .5f;
-    float movement = 0f;
+    [SerializeField] public float jumpHeight = .7f;
 
-    UIManager uiManager;
+    public UIManager uiManager;
     [SerializeField] UIDocument uiDocument;
 
-    //Item inventory
-    Dictionary<int, string> inventory = new Dictionary<int, string>();
-    [SerializeField] float inventorySize = 3;
 
-    int slot = 1;
+    [SerializeField] public int inventorySize = 3;
 
     Rigidbody2D rb;
 
-    Animator walk;
+    [SerializeField] public GameObject explosionEffect;
 
-    public GameObject explosionEffect; 
+    Animator walk;
+    PlayerMovement moveControl;
+    public InventoryManager inventoryManager;
+
+    CollisionHandler collisionHandler;
 
     //list of all possible items in the game
     public Dictionary<string, Item> itemList = new Dictionary<string, Item>();
@@ -42,6 +47,9 @@ public class PlayerController : MonoBehaviour
     //list of possible abilities to be activated, according to key given to item that can activate them
     public Dictionary<string, TrackingBool> abilityList = new Dictionary<string, TrackingBool>();
 
+    //list of possible items that can trigger motion in environment - 1st string is item name, 2nd string is name of object to move
+    public Dictionary<string, string> motionList = new Dictionary<string, string>();
+
 
     //Allows for detection of collisions
     //Must match what these layers are set to in Unity
@@ -52,9 +60,11 @@ public class PlayerController : MonoBehaviour
 
     //variables for controlling ability to jump
     TrackingBool canJump = new TrackingBool(false);
+    TrackingBool canTallJump = new TrackingBool(false);
     float jumpTimer = 0f;
     bool isTouchingGround;
     bool timerOn = false;
+
 
     void Start()
     {
@@ -63,12 +73,9 @@ public class PlayerController : MonoBehaviour
         walk = GetComponent<Animator>();
 
         uiManager = new UIManager(uiDocument);
-
-        //set up empty inventory
-        for (int i = 1; i <= inventorySize; i++)
-        {
-            inventory.Add(i, null);
-        }
+        moveControl = new PlayerMovement(walk, forwardSpeed, jumpHeight);
+        inventoryManager = new InventoryManager(this);
+        collisionHandler = new CollisionHandler(this, inventoryManager);
 
         //set up itemList
         Item NoteFile = new TextItem("NoteFile", "This is a text item.");
@@ -77,26 +84,39 @@ public class PlayerController : MonoBehaviour
         itemList.Add(Hammer.name, Hammer);
         Item Terminal_1 = new NonCollectible ("Terminal_1", "Use 'V' to navigate inventory, 'C' to use item, 'X' to drop");
         itemList.Add(Terminal_1.name, Terminal_1);
-        Item JumpTool = new AbilityItem("JumpTool", "Press spacebar to jump", "jump");
-        itemList.Add(JumpTool.name, JumpTool);
+        Item Spring = new AbilityItem("Spring", "Press spacebar to jump", "jump");
+        itemList.Add(Spring.name, Spring);
         Item FinalKey = new KeyItem("FinalKey", "Go find a door!");
         itemList.Add(FinalKey.name, FinalKey);
+        Item TrapdoorKey = new KeyItem("TrapdoorKey", "This door might be a little different...");
+        itemList.Add(TrapdoorKey.name, TrapdoorKey);
+        Item ExtraSprings = new AbilityItem("ExtraSprings", "Bet you could do something with these...", "tall jump");
+        itemList.Add(ExtraSprings.name, ExtraSprings);
+        Item Terminal_2 = new NonCollectible("Terminal_2", "Look at you, doing things the hard way!");
+        itemList.Add(Terminal_2.name, Terminal_2);
+        Item RemoteControl = new MotionItem("RemoteControl", "Check this out!");
+        itemList.Add(RemoteControl.name, RemoteControl);
 
         //set up lockList
         lockList.Add("evilTriangle", "Hammer");
         lockList.Add("Door", "FinalKey");
+        lockList.Add("Trapdoor", "TrapdoorKey");
 
         //set up abilityList
         abilityList.Add("jump", canJump);
+        abilityList.Add("tall jump", canTallJump);
+
+        //set up motionList
+        motionList.Add("RemoteControl", "Plank");
     }
 
     void Update()
     {
-        MovePlayer();
-        UseItem();
+        moveControl.MovePlayer(this);
+        inventoryManager.UseInventory();
 
         //jump functionality
-        if (Keyboard.current.spaceKey.isPressed && canJump.trackedBool == true && isTouchingGround == true)
+        if (Keyboard.current.spaceKey.wasPressedThisFrame && canJump.trackedBool == true && isTouchingGround == true)
         {
             timerOn = true;
         }
@@ -107,146 +127,37 @@ public class PlayerController : MonoBehaviour
         }   
 
         if (jumpTimer < .05 && timerOn == true && canJump.trackedBool == true)
-            {
-                isTouchingGround = false;
-                rb.AddForce(new Vector2 (0, jumpHeight), ForceMode2D.Impulse);
-            }
+        {
+            moveControl.Jump(rb, canTallJump);
+            isTouchingGround = false;
+        }
         
         if (isTouchingGround == true)
         {
             timerOn = false;
             jumpTimer = 0f;
         }
-
         
     }
-
-    void MovePlayer()
-    {
-        //move character forward
-        if (Keyboard.current.dKey.isPressed || Keyboard.current.rightArrowKey.isPressed)
-        {
-            movement += .1f;
-            walk.enabled = true;
-            walk.Play(Animator.StringToHash("WalkCycle"));
-        }
-        //move character backward
-        else if (Keyboard.current.aKey.isPressed || Keyboard.current.leftArrowKey.isPressed)
-        {
-            movement -= .1f;
-            walk.enabled = true;
-            walk.Play(Animator.StringToHash("WalkCycleBackwards"));
-        }
-        else
-        {
-            movement = 0f;
-            walk.enabled = false;
-        }
-
-        //apply movement 
-        float moveAmount = movement * forwardSpeed * Time.deltaTime;
-        transform.Translate(moveAmount, 0, 0);
-    }
-
-    void UseItem()
-    {
-
-        //navigate inventory using 'v' key
-        if (Keyboard.current.vKey.wasPressedThisFrame)
-        {
-            if (slot < inventorySize)
-            {
-                slot += 1;
-            }
-            else
-            {
-                slot = 1;
-            }
-            uiManager.SlotText(slot, inventory[slot]);
-
-        }
-
-        //drop object from inventory using 'x' key
-        if (Keyboard.current.xKey.wasPressedThisFrame)
-        {
-            if (inventory[slot] != null)
-            {
-                //respawn object in level
-                Vector3 objectLocation = new Vector3(0.0f, 0.0f, 0.0f);
-                objectLocation.Set(transform.position.x -2, transform.position.y, transform.position.z);
-                string currentObject = inventory[slot];
-                Instantiate(Resources.Load(currentObject), objectLocation, transform.rotation);
-
-                //deactivate ability if item is AbilityItem
-                Item currentItem = itemList[inventory[slot]];
-                if (currentItem.isAbility == true)
-                {
-                    abilityList[currentItem.targetAbility].trackedBool = false;
-                }
-
-                //reset inventory, display drop message
-                inventory[slot] = null;
-                uiManager.DropText(slot);
-                slot = 1;
-            }
-
-            else
-            {
-                uiManager.DropTextErr();
-            }
-            
-        }
-
-        //use item from inventory using 'c' key
-        if (Keyboard.current.cKey.wasPressedThisFrame && inventory[slot] != null)
-        {
-            Item currentItem = itemList[inventory[slot]];
-            string itemText = currentItem.UseItem();
-
-            //turn on ability if item is AbilityItem
-            if (currentItem.isAbility == true)
-            {
-                abilityList[currentItem.targetAbility].trackedBool = true;
-            }
-
-            if (itemText != null)
-            {
-                uiManager.PrintToScreen(itemText);
-            }
-            else
-            {
-                uiManager.ActivateText(slot);
-            }
-            slot = 1;
-        }
-    }
+  
 
     void OnTriggerEnter2D(Collider2D collision)
     {
         if (collision.gameObject.layer == itemLayer)
         {
-
-            for (int i = 1; i <= inventorySize; i++)
-            {
-                if (inventory[i] == null)
-                {
-                    inventory[i] = collision.gameObject.tag;
-                    Destroy(collision.gameObject);
-                    uiManager.AddText();
-                    return;
-                }
-            }
-            uiManager.AddTextErr();
+            collisionHandler.CollectItem(collision);
         }
         else if (collision.gameObject.layer == nonCollectibleLayer)
         {
-            string message = itemList[collision.gameObject.tag].itemText;
-            uiManager.PrintToScreen(message);
+            collisionHandler.ViewNonCollectible(collision);
         }
         else if (collision.gameObject.tag == "Finish")
         {
-            Time.timeScale = 0;
-            uiManager.PrintToScreen("Level Complete!");
+            collisionHandler.FinishLevel();
+        }
+        else if (collision.gameObject.tag == "FloorCollider")
+        {
+            collisionHandler.ResetLevel();
         }
     }
 
@@ -254,16 +165,7 @@ public class PlayerController : MonoBehaviour
     {
         if (collision.gameObject.layer == obstacleLayer)
         {
-            string collisionName = collision.gameObject.name;
-
-            for (int i = 1; i <= inventorySize; i++)
-            {
-                if (inventory[i] == lockList[collisionName])
-                {
-                    Instantiate(explosionEffect, collision.transform.position, collision.transform.rotation);
-                    Destroy(collision.gameObject);
-                }
-            }
+            collisionHandler.DestroyObstacle(collision);
         }
         else if (collision.gameObject.layer == groundLayer)
         {
