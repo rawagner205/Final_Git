@@ -33,6 +33,7 @@ public class PlayerController : MonoBehaviour
 
     Animator walk;
     PlayerMovement moveControl;
+    SpriteRenderer sprite;
     public InventoryManager inventoryManager;
 
     CollisionHandler collisionHandler;
@@ -65,12 +66,16 @@ public class PlayerController : MonoBehaviour
     bool isTouchingGround;
     bool timerOn = false;
 
+    TrackingBool isGravityFlipped = new TrackingBool(false);
+
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
 
         walk = GetComponent<Animator>();
+        sprite = GetComponent<SpriteRenderer>();
+
 
         uiManager = new UIManager(uiDocument);
         moveControl = new PlayerMovement(walk, forwardSpeed, jumpHeight);
@@ -80,7 +85,7 @@ public class PlayerController : MonoBehaviour
         //set up itemList
         Item NoteFile = new TextItem("NoteFile", "This is a text item.");
         itemList.Add(NoteFile.name, NoteFile);
-        Item Hammer = new KeyItem("Hammer", "Try touching that triangle now.");
+        Item Hammer = new KeyItem("Hammer", "Look for something yellow...");
         itemList.Add(Hammer.name, Hammer);
         Item Terminal_1 = new NonCollectible ("Terminal_1", "Use 'V' to navigate inventory, 'C' to use item, 'X' to drop");
         itemList.Add(Terminal_1.name, Terminal_1);
@@ -96,15 +101,22 @@ public class PlayerController : MonoBehaviour
         itemList.Add(Terminal_2.name, Terminal_2);
         Item RemoteControl = new MotionItem("RemoteControl", "Check this out!");
         itemList.Add(RemoteControl.name, RemoteControl);
+        Item AntigravBooster = new AbilityItem("AntigravBooster", "Hold on to your hat!","antigravity");
+        itemList.Add(AntigravBooster.name, AntigravBooster);
+        Item ExitKey = new KeyItem("ExitKey", "I hope you know what this is for by now.");
+        itemList.Add(ExitKey.name, ExitKey);
 
         //set up lockList
         lockList.Add("evilTriangle", "Hammer");
         lockList.Add("Door", "FinalKey");
         lockList.Add("Trapdoor", "TrapdoorKey");
+        lockList.Add("ExitDoor", "ExitKey");
+        lockList.Add("Barricade", "Hammer");
 
         //set up abilityList
         abilityList.Add("jump", canJump);
         abilityList.Add("tall jump", canTallJump);
+        abilityList.Add("antigravity", isGravityFlipped);
 
         //set up motionList
         motionList.Add("RemoteControl", "Plank");
@@ -136,6 +148,18 @@ public class PlayerController : MonoBehaviour
         {
             timerOn = false;
             jumpTimer = 0f;
+        }
+
+        //antigravity
+        if (isGravityFlipped.trackedBool == true)
+        {
+            rb.gravityScale = -3;
+            sprite.flipY = true;
+        }
+        else
+        {
+            rb.gravityScale = 3;
+            sprite.flipY = false;
         }
         
     }

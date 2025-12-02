@@ -16,6 +16,8 @@ TagManager:
   - FloorCollider
   - Terminal_2
   - RemoteControl
+  - AntigravBooster
+  - ExitKey
   layers:
   - Default
   - TransparentFX
