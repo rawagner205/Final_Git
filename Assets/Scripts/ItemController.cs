@@ -2,23 +2,7 @@ using Unity.VisualScripting;
 using UnityEngine;
 using System.Collections.Generic;
 using System.Runtime.InteropServices.WindowsRuntime;
-public class ItemController : MonoBehaviour
-{
-
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
-    }
-}
-
+using static PlayerController;
 public abstract class Item
 {
     public string name { get; set; } = "name";

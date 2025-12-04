@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using static ItemController;
 using static PlayerMovement;
 using static InventoryManager;
 using static CollisionHandler;
@@ -60,13 +59,13 @@ public class PlayerController : MonoBehaviour
     [SerializeField] int nonCollectibleLayer = 8;
 
     //variables for controlling ability to jump
-    TrackingBool canJump = new TrackingBool(false);
-    TrackingBool canTallJump = new TrackingBool(false);
+    public TrackingBool canJump = new TrackingBool(false);
+    public TrackingBool canTallJump = new TrackingBool(false);
     float jumpTimer = 0f;
     bool isTouchingGround;
     bool timerOn = false;
 
-    TrackingBool isGravityFlipped = new TrackingBool(false);
+    public TrackingBool isGravityFlipped = new TrackingBool(false);
 
 
     void Start()
@@ -81,7 +80,7 @@ public class PlayerController : MonoBehaviour
         moveControl = new PlayerMovement(walk, forwardSpeed, jumpHeight);
         inventoryManager = new InventoryManager(this);
         collisionHandler = new CollisionHandler(this, inventoryManager);
-
+        
         //set up itemList
         Item NoteFile = new TextItem("NoteFile", "This is a text item.");
         itemList.Add(NoteFile.name, NoteFile);
@@ -120,6 +119,7 @@ public class PlayerController : MonoBehaviour
 
         //set up motionList
         motionList.Add("RemoteControl", "Plank");
+
     }
 
     void Update()
