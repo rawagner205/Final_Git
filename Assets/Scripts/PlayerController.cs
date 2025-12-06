@@ -12,11 +12,11 @@ using System.ComponentModel;
 using NUnit.Framework;
 using UnityEngine.SceneManagement;
 using NUnit.Framework.Constraints;
+using System.Numerics;
 
 public class PlayerController : MonoBehaviour
 {
 
-    // Starting speed of player movement
     [SerializeField] public float forwardSpeed = 1f;
     [SerializeField] public float jumpHeight = .7f;
 
@@ -40,14 +40,16 @@ public class PlayerController : MonoBehaviour
     //list of all possible items in the game
     public Dictionary<string, Item> itemList = new Dictionary<string, Item>();
 
-    //list of all possible "locked" objects in the game (objects activated when player has correct item)
+    //list of all possible "locked" objects in the game (objects destroyed when player has corresponding "key" item)
     //1st string is the name of the locked object, 2nd string is the name of the key object
     public Dictionary<string, string> lockList = new Dictionary<string, string>();
 
-    //list of possible abilities to be activated, according to key given to item that can activate them
+    //list of all possible item-activated abilities in the game
+    //string is the name of the item that activates the ability, TrackingBool is the boolean that tracks whether an ability has been activated
     public Dictionary<string, TrackingBool> abilityList = new Dictionary<string, TrackingBool>();
 
-    //list of possible items that can trigger motion in environment - 1st string is item name, 2nd string is name of object to move
+    //list of all possible items that can trigger motion in environment
+    //1st string is item name, 2nd string is the name of the object it triggers
     public Dictionary<string, string> motionList = new Dictionary<string, string>();
 
 
@@ -67,6 +69,10 @@ public class PlayerController : MonoBehaviour
 
     public TrackingBool isGravityFlipped = new TrackingBool(false);
 
+    //for sound effects
+    [SerializeField] AudioClip collectSFX;
+    [SerializeField] AudioClip jumpSFX;
+
 
     void Start()
     {
@@ -74,7 +80,6 @@ public class PlayerController : MonoBehaviour
 
         walk = GetComponent<Animator>();
         sprite = GetComponent<SpriteRenderer>();
-
 
         uiManager = new UIManager(uiDocument);
         moveControl = new PlayerMovement(walk, forwardSpeed, jumpHeight);
@@ -124,33 +129,81 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        //check for and process player input
         moveControl.MovePlayer(this);
         inventoryManager.UseInventory();
+        SetGravity();
 
-        //jump functionality
+        //activates jump timer
         if (Keyboard.current.spaceKey.wasPressedThisFrame && canJump.trackedBool == true && isTouchingGround == true)
         {
             timerOn = true;
         }
-
         if (timerOn == true)
         {
             jumpTimer += Time.deltaTime;
-        }   
-
+        }  
+        //jump movement and sound 
         if (jumpTimer < .05 && timerOn == true && canJump.trackedBool == true)
         {
             moveControl.Jump(rb, canTallJump);
+            AudioSource.PlayClipAtPoint(jumpSFX, transform.position);
             isTouchingGround = false;
-        }
-        
+        } 
+        //resets states when player collides with ground again
         if (isTouchingGround == true)
         {
             timerOn = false;
             jumpTimer = 0f;
         }
+        
+    }
+  
 
-        //antigravity
+    void OnTriggerEnter2D(Collider2D collision)
+    {
+        //collect items
+        if (collision.gameObject.layer == itemLayer)
+        {
+            if (inventoryManager.isFull() == false)
+            {
+                AudioSource.PlayClipAtPoint(collectSFX, transform.position);
+            }
+            collisionHandler.CollectItem(collision);
+        }
+        //display message from noncollectible
+        else if (collision.gameObject.layer == nonCollectibleLayer)
+        {
+            collisionHandler.ViewNonCollectible(collision);
+        }
+        //register end of level met
+        else if (collision.gameObject.tag == "Finish")
+        {
+            collisionHandler.FinishLevel();
+        }
+        //register if player has fallen out of bounds
+        else if (collision.gameObject.tag == "FloorCollider")
+        {
+            collisionHandler.ResetLevel();
+        }
+    }
+
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        //destroy obstacle on collisionS
+        if (collision.gameObject.layer == obstacleLayer)
+        {
+            collisionHandler.DestroyObstacle(collision);
+        }
+        //register if player is touching ground
+        else if (collision.gameObject.layer == groundLayer)
+        {
+            isTouchingGround = true;
+        }
+    }
+    void SetGravity()
+    {
+        //activates and deactivates antigravity
         if (isGravityFlipped.trackedBool == true)
         {
             rb.gravityScale = -3;
@@ -160,40 +213,6 @@ public class PlayerController : MonoBehaviour
         {
             rb.gravityScale = 3;
             sprite.flipY = false;
-        }
-        
-    }
-  
-
-    void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.gameObject.layer == itemLayer)
-        {
-            collisionHandler.CollectItem(collision);
-        }
-        else if (collision.gameObject.layer == nonCollectibleLayer)
-        {
-            collisionHandler.ViewNonCollectible(collision);
-        }
-        else if (collision.gameObject.tag == "Finish")
-        {
-            collisionHandler.FinishLevel();
-        }
-        else if (collision.gameObject.tag == "FloorCollider")
-        {
-            collisionHandler.ResetLevel();
-        }
-    }
-
-    void OnCollisionEnter2D(Collision2D collision)
-    {
-        if (collision.gameObject.layer == obstacleLayer)
-        {
-            collisionHandler.DestroyObstacle(collision);
-        }
-        else if (collision.gameObject.layer == groundLayer)
-        {
-            isTouchingGround = true;
         }
     }
 

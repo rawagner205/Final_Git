@@ -10,6 +10,8 @@ public abstract class Item
 
     public bool isAbility {get; set; } = false;
     public bool isMotion {get; set; } = false;
+
+    //linked ability to be activated (if Item is AbilityItem)
     public string targetAbility {get; set;} = null;
 
     public Item(string itemName, string newItemText)
@@ -89,6 +91,8 @@ public class MotionItem : Item
     }
 }
 
+
+//class to help track and update booleans as they are passed between functions
 public class TrackingBool
 {
     public bool trackedBool {get; set; }

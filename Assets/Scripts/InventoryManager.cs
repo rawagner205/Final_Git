@@ -11,7 +11,7 @@ public class InventoryManager
     public int slot = 1;
     public int inventorySize;
 
-    //Item inventory
+    //the player's Item inventory
     public Dictionary<int, string> inventory = new Dictionary<int, string>();
     public InventoryManager(PlayerController playerController)
     {
@@ -46,12 +46,26 @@ public class InventoryManager
         }
     }
 
+    public bool isFull()
+    {
+        for (int i = 1; i <= inventorySize; i++)
+        {
+            if (inventory[i] == null)
+            {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
     void NavigateSlots()
     {
         if (slot < inventorySize)
         {
             slot += 1;
         }
+        //if end of inventory is reached, wrap around back to first slot
         else
         {
             slot = 1;
@@ -98,6 +112,8 @@ public class InventoryManager
         {
             player.abilityList[currentItem.targetAbility].trackedBool = true;
         }
+
+        //trigger motion if item is MotionItem
         else if (currentItem.isMotion == true)
         {
             string targetObject = player.motionList[currentItem.name];
@@ -113,6 +129,7 @@ public class InventoryManager
         {
             player.uiManager.ActivateText(slot);
         }
+        
         slot = 1;
 }
 }

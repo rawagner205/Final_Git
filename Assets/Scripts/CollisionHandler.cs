@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+
 public class CollisionHandler
 {
     PlayerController player;
@@ -19,6 +20,7 @@ public class CollisionHandler
     {
         for (int i = 1; i <= inventorySize; i++)
         {
+            //add item to next open slot in inventory and destroy sprite
             if (player.inventoryManager.inventory[i] == null)
             {
                 player.inventoryManager.inventory[i] = collision.gameObject.tag;
@@ -32,6 +34,7 @@ public class CollisionHandler
 
     public void ViewNonCollectible(Collider2D collision)
     {
+        //display message for non-collectible item
         string message = player.itemList[collision.gameObject.tag].itemText;
         player.uiManager.PrintToScreen(message);
     }
@@ -41,11 +44,14 @@ public class CollisionHandler
         player.uiManager.PrintToScreen("Level Complete!");
         int nextScene = SceneManager.GetActiveScene().buildIndex + 1;
 
+        //if last level, pause game and display restart button
         if (nextScene == SceneManager.sceneCountInBuildSettings)
         {
             player.uiManager.PrintToScreen("Game Complete!");
             Time.timeScale = 0;
+            player.uiManager.DisplayRestartButton();
         }
+        //load next scene
         else
         {
             SceneManager.LoadScene(nextScene);

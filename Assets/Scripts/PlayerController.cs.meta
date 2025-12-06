@@ -1,2 +1,17 @@
 fileFormatVersion: 2
 guid: e8ba142f096c2fb4cac6d6a700ea5f0e
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - uiDocument: {instanceID: 0}
+  - explosionEffect: {instanceID: 0}
+  - successSFX: {fileID: 8300000, guid: f51cf1e961539674f9811409e8febe76, type: 3}
+  - failureSFX: {fileID: 8300000, guid: 91276700a15d4b842a1b708efe05941f, type: 3}
+  - collectSFX: {fileID: 8300000, guid: efab0cdcc52d17546a222f38dcc01112, type: 3}
+  - jumpSFX: {fileID: 8300000, guid: 63748bb1b7666134db52b8c40def0932, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

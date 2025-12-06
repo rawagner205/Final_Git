@@ -1,15 +1,23 @@
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEngine.SceneManagement;
+using Unity.VisualScripting;
 
 public class UIManager
 {
     public UIDocument uiDocument;
     public Label uiConsole;
 
+    public Button restartButton;
+
     public UIManager(UIDocument newDocument)
     {
         uiDocument = newDocument;
         uiConsole = uiDocument.rootVisualElement.Q<Label>("UIConsole");
+        restartButton = uiDocument.rootVisualElement.Q<Button>("RestartButton");
+
+        restartButton.clicked += RestartGame;
+        HideRestartButton();
     }
 
     public void SlotText(int slot, string contents)
@@ -46,4 +54,22 @@ public class UIManager
     {
         uiConsole.text = text;
     }
+
+    public void DisplayRestartButton()
+    {
+        restartButton.style.display = DisplayStyle.Flex;
+    }
+
+    public void HideRestartButton()
+    {
+        restartButton.style.display = DisplayStyle.None;
+    }
+
+    public void RestartGame()
+    {
+        SceneManager.LoadScene(0);
+        HideRestartButton();
+        Time.timeScale = 1;
+    }
 }
+

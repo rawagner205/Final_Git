@@ -45,10 +45,12 @@ public class PlayerMovement
     
     public void Jump(Rigidbody2D rb, TrackingBool canTallJump)
     {
+        //increase jump height if canTallJump is activated 
         if (canTallJump.trackedBool == true)
         {
             rb.AddForce(new Vector2 (0, jumpHeight * 1.2f), ForceMode2D.Impulse);
         }
+        //regular jump height if canTallJump isn't activated
         else
         {
             rb.AddForce(new Vector2 (0, jumpHeight), ForceMode2D.Impulse);
