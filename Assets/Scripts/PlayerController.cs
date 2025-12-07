@@ -17,7 +17,7 @@ using System.Numerics;
 public class PlayerController : MonoBehaviour
 {
 
-    [SerializeField] public float forwardSpeed = 1f;
+    [SerializeField] public float forwardSpeed = 1.2f;
     [SerializeField] public float jumpHeight = .7f;
 
     public UIManager uiManager;
@@ -144,7 +144,7 @@ public class PlayerController : MonoBehaviour
             jumpTimer += Time.deltaTime;
         }  
         //jump movement and sound 
-        if (jumpTimer < .05 && timerOn == true && canJump.trackedBool == true)
+        if (jumpTimer < .25 && timerOn == true && canJump.trackedBool == true)
         {
             moveControl.Jump(rb, canTallJump);
             AudioSource.PlayClipAtPoint(jumpSFX, transform.position);
